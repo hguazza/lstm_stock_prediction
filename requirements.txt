@@ -1,0 +1,23 @@
+# Dependências do projeto LSTM Stock Prediction
+
+# Deep Learning
+tensorflow>=2.15.0
+keras>=2.15.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# API
+flask>=3.0.0
+# fastapi>=0.104.0
+# uvicorn>=0.24.0
+
+# Utilities
+python-dotenv>=1.0.0
+
