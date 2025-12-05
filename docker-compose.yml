@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # API Service - Serviço de inferência
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: lstm-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./artifacts:/app/artifacts
+    environment:
+      - ARTIFACTS_DIR=/app/artifacts
+      - MODEL_WEIGHTS_PATH=/app/artifacts/model_weights.pt
+      - CONFIG_PATH=/app/artifacts/config.json
+      - SCALER_PATH=/app/artifacts/scaler.pkl
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - lstm-network
+
+  # Training Service - Serviço de treinamento
+  training:
+    build:
+      context: .
+      dockerfile: Dockerfile.training
+    container_name: lstm-training
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./data:/app/data
+    environment:
+      - ARTIFACTS_DIR=/app/artifacts
+      - PYTHONUNBUFFERED=1
+    command: python train_pipeline.py
+    restart: "no"  # Não reinicia automaticamente após conclusão
+    networks:
+      - lstm-network
+    profiles:
+      - training  # Executa apenas quando especificado: docker-compose --profile training up training
+
+  # Redis Service - Cache e fila de mensagens
+  redis:
+    image: redis:7-alpine
+    container_name: lstm-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lstm-network
+
+volumes:
+  artifacts_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  lstm-network:
+    driver: bridge
+

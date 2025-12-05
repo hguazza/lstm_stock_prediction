@@ -1,0 +1,15 @@
+{
+  "input_size": 5,
+  "hidden_size": 32,
+  "num_layers": 1,
+  "dropout": 0.2,
+  "window": 30,
+  "features": [
+    "Open",
+    "High",
+    "Low",
+    "Close",
+    "Volume"
+  ],
+  "target_idx": 3
+}
